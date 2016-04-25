@@ -15,5 +15,21 @@ namespace MCCA.Controllers
         {
             return View();
         }
+        public IActionResult ManageAccounts()
+        {
+            return View();
+        }
+        public IActionResult ManageCenters()
+        {
+            return View();
+        }
+        public IActionResult ManageSite()
+        {
+            return View();
+        }
+        public IActionResult Donations()
+        {
+            return View();
+        }
     }
 }
