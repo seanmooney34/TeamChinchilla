@@ -2,4 +2,30 @@
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    ViewData["Title"] = "Manage Center";
 }
+<h1>Manage Center</h1>
+<form>
+    <fieldset class="form-group">
+        <label for="txtCenterName">Center Name</label>
+        <input type="text" class="form-control" id="txtCenterName" placeholder="Enter Center Name">
+        <small class="text-muted">Input the name of the MESA center.</small>
+    </fieldset>
+    <fieldset class="form-group">
+        <label for="txtCenterAddr">Center Address</label>
+        <input type="text" class="form-control" id="txtCenterAddr" placeholder="Enter Center Address">
+        <small class="text-muted">Input the address of the MESA center.</small>
+    </fieldset>
+    <fieldset class="form-group">
+        <label for="txtDescription">Center Description</label>
+        <textarea class="form-control" id="txtDescription" rows="3"></textarea>
+        <small class="text-muted">Enter a short description about the center.</small>
+    </fieldset>
+    <fieldset class="form-group">
+        <label for="txtCenterUrl">Center URL</label>
+        <input type="url" class="form-control" id="txtCenterUrl" placeholder="Enter Center URL">
+        <small class="text-muted">Enter a link for the center's homepage.</small>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>

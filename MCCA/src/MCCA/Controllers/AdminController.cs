@@ -19,6 +19,10 @@ namespace MCCA.Controllers
         {
             return View();
         }
+        public IActionResult SelectCenter()
+        {
+            return View();
+        }
         public IActionResult ManageCenters()
         {
             return View();
