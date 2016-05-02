@@ -65,6 +65,16 @@ body {
     color:#fff;
 }
 
+.navbar-inverse .navbar-toggle .icon-bar{
+    background-color:#333;
+}
+.navbar-inverse .navbar-toggle:hover{
+    background-color:#fff;
+}
+.navbar-inverse .navbar-toggle:focus{
+    background-color:#fff;
+}
+
 .footer-wrap {
     margin-top: 50px;
 }

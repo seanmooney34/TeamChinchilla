@@ -455,8 +455,12 @@ p.lead {
 .navbar-default .navbar-nav > li > a:hover {
   color: #32c5d2; }
 
+.navbar-brand{
+  height:auto;
+  padding:0;
+}
 .navbar-brand img {
-  width: 80px;
+  width: 200px;
   height: auto; }
 
 /*============================*/
@@ -683,7 +687,7 @@ TOP BARS
   -moz-box-shadow: -1px 1px 1px rgba(0, 0, 0, 0.1);
   -ms-box-shadow: -1px 1px 1px rgba(0, 0, 0, 0.1);
   box-shadow: -1px 1px 1px rgba(0, 0, 0, 0.1);
-  background-color: #333;
+  background-color: #fff;
   -moz-transition: all 0.4s ease-in-out;
   -o-transition: all 0.4s ease-in-out;
   -webkit-transition: all 0.4s ease-in-out;
@@ -699,14 +703,14 @@ TOP BARS
 
 .navbar-inverse .navbar-brand {
   font-weight: 700;
-  color: #fff !important;
+  color: #000 !important;
   font-size: 30px;
   line-height: 20px;
   font-style: normal;
   text-transform: uppercase; }
 
 .navbar-inverse .navbar-nav > li > a {
-  color: #fff;
+  color: #000;
   font-size: 15px;
   text-transform: uppercase; }
 
@@ -867,14 +871,14 @@ TOP BARS
 /************************************************* css for footers****************************************/
 /**footet dark**/
 #footer {
-  background: #111;
+  background: #fff;
   font-size: 0.9em;
   padding: 80px 0 0;
   position: relative;
   clear: both; }
 
 .footer-col h3 {
-  color: #fff;
+  color: #333;
   margin-bottom: 35px;
   font-size: 20px;
   text-transform: uppercase;
@@ -882,10 +886,10 @@ TOP BARS
   font-style: normal; }
 
 .footer-col h3:first-letter {
-  border-bottom: 1px solid #bbb; }
+  border-bottom: 1px solid #000; }
 
 .footer-col p {
-  color: #aeaeae;
+  color: #333;
   font-size: 13px; }
 
 .contact p {
@@ -4562,14 +4566,14 @@ MULTI LEVEL DROPDOWN CSS
   border: 1px solid #444; }
 
 .navbar .dropdown-menu.dark-dropdown li a {
-  color: #bbb; }
+  color: #000; }
 
 .navbar .dropdown-menu.dark-dropdown li a:hover {
   color: #32c5d2;
   background-color: transparent; }
 
 .navbar .dropdown-menu.dark-dropdown, .navbar .dropdown-menu.dark-dropdown .yamm-content {
-  background-color: #333; }
+  background-color: #fff; }
 
 .navbar .dropdown-menu.dark-dropdown li a {
   border-color: #444; }

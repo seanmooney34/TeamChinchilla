@@ -15,6 +15,9 @@ textarea {
 /* Carousel */
 .carousel-caption {
     z-index: 10 !important;
+    right:60%;
+    bottom:20%;
+    left:0%;
 }
 
 .carousel-caption p {
