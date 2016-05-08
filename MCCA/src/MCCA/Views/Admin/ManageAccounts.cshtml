@@ -8,8 +8,9 @@
 <fieldset>
     @*Adding a create account button*@
     <button type="submit" value="Add Account" onclick="location.href='@Url.Action("AddAccount", "Admin")'" class="btn btn-primary">Add Account</button>
-    @*Adding textfield and button to create a search bar*@
+    @*Adding textfield and buttons to create a search bar*@
     <label for="Name">Name:</label>
     <input type="text" id="Name">
-    <button type="submit" value="Search Names" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Filter</button>
+    <button type="submit" value="Filter First Name" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Filter by First Name</button>
+    <button type="submit" value="Filter Last Name" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Filter by Last Name</button>
 </fieldset>

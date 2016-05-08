@@ -35,7 +35,7 @@ namespace MCCA.Controllers
         {
             return View();
         }
-        public IActionResult Donations()
+        public IActionResult ManagePersonalAccount()
         {
             return View();
         }
