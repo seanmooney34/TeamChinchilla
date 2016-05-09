@@ -1,0 +1,58 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Manage Personal Account";
+}
+<h2>Manage Personal Account</h2>
+<form class="form-horizontal">
+    @*Adding a gray-out disabled First name textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="FirstName">First Name:</label>
+        <input type="text" id="FirstName" style="background-color:#999" disabled>
+    </div>
+    @*Adding a grayed-out disabled Last name textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="LasttName">Last Name:</label>
+        <input type="text" id="LastName"style="background-color:#999" disabled>
+    </div>
+    @*@Adding a grayed-out disabled account type textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="AccountType">Account Type:</label>
+        <input type="text" id="AccountType" style="background-color:#999" disabled>
+    </div>
+    @*Adding a gray-out disabled center textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="Center">Center:</label>
+        <input type="text" id="Center" style="background-color:#999" disabled>
+    </div>
+    @*Adding a email textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="Email:">Email:</label>
+        <input type="text" id="Email">
+    </div>
+    @*Adding a phone number textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="PhoneNumber">Phone Number:</label>
+        <input type="text" id="PhoneNumber">
+    </div>
+    @*Adding a gray-out disbled username textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="Username">Username:</label>
+        <input type="text" id="Username" style="background-color:#999" disabled>
+    </div>
+    @*Adding password textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="Password">Password:</label>
+        <input type="text" id="Password">
+    </div>
+</form>
+@*Adding save, delete and back buttons*@
+<fieldset>
+    @*Adding a save button that will add the new account details to the database*@
+    <button type="submit" value="Edit Account" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Save</button>
+    @*Adding a delete button that will delete the account from the database*@
+    <button type="submit" value="Delete Account" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Delete Account</button>
+    @*Adding a back button that takes user to the Index content page*@
+    <button type="submit" value="Back" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Back</button>
+</fieldset>
