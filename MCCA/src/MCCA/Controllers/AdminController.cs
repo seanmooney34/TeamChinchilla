@@ -31,6 +31,10 @@ namespace MCCA.Controllers
         {
             return View();
         }
+        public IActionResult AddCenter()
+        {
+            return View();
+        }
         public IActionResult ManageSite()
         {
             return View();
