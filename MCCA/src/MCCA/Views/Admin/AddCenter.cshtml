@@ -5,27 +5,57 @@
     ViewData["Title"] = "Add Center";
 }
 <h1>Add Center</h1>
-<form>
-    <fieldset class="form-group">
-        <label for="txtCenterName">Center Name</label>
-        <input type="text" class="form-control" id="txtCenterName" placeholder="Enter Center Name">
-        <small class="text-muted">Input the name of the MESA center.</small>
-    </fieldset>
-    <fieldset class="form-group">
-        <label for="txtCenterAddr">Center Address</label>
-        <input type="text" class="form-control" id="txtCenterAddr" placeholder="Enter Center Address">
-        <small class="text-muted">Input the address of the MESA center.</small>
-    </fieldset>
-    <fieldset class="form-group">
-        <label for="txtDescription">Center Description</label>
-        <textarea class="form-control" id="txtDescription" rows="3"></textarea>
-        <small class="text-muted">Enter a short description about the center.</small>
-    </fieldset>
-    <fieldset class="form-group">
-        <label for="txtCenterUrl">Center URL</label>
-        <input type="url" class="form-control" id="txtCenterUrl" placeholder="Enter Center URL">
-        <small class="text-muted">Enter a link for the center's homepage.</small>
-    </fieldset>
-
+<form class="form-horizontal">
+    @*Adding center name textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtCenterName">Center Name:</label>
+        <input type="text" class="form-control" id="txtCenterName" placeholder="Enter center name">
+    </div>
+    @*Adding center address textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtCenterAddr">Center Address:</label>
+        <input type="text" class="form-control" id="txtCenterAddr" placeholder="Enter center address">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: 6000 J Street, Sacramento, CA 95819</small>
+        </div>
+    </div>
+    @*Adding center location on campus textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtCenterLoc">Center Location:</label>
+        <input type="text" class="form-control" id="txtCenterLoc" placeholder="Enter center location on campus">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: Lassen Hall 2001 </small>
+        </div>
+    </div>
+    @*Adding director name textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtDirectorName">Director's Name:</label>
+        <input type="text" class="form-control" id="txtDirectorName" placeholder="Enter director's name">
+    </div>
+    @*Adding director office number textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtDirectorNumber">Director's Office Number:</label>
+        <input type="text" class="form-control" id="txtDirectorNumber" placeholder="Enter director's office number">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: 9165555555</small>
+        </div>
+    </div>
+    @*Adding center URL textfield*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtCenterUrl">Center URL:</label>
+        <input type="url" class="form-control" id="txtCenterUrl" placeholder="Enter denter URL">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: www.mesa.edu</small>
+        </div>
+    </div>
+    @*Adding center description textblock*@
+    <div class="form-group">
+        <label class="col-sm-3" for="txtDescription">Center Description:</label>
+        <textarea class="form-control" id="txtDescription" rows="3" placeholder="Enter a short description about the center."></textarea>
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Any information you want to share about the center such as statistical information.</small>
+        </div>
+    </div>
+    @*Adding a submit button that adds new center information to the database and add the new center to teh Center page*@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>

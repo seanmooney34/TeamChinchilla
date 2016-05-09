@@ -3,26 +3,27 @@
     @*Adding First name textfield*@
     <div class="form-group">
         <label class="col-sm-3" for="FirstName" >First Name:</label>
-        <input type="text" id="FirstName">
+        <input type="text" class="form-control" id="FirstName" placeholder="Enter first name">
     </div>
     @*Adding Last name textfield*@
     <div class="form-group">
         <label class="col-sm-3" for="LasttName">Last Name:</label>
-        <input type="text" id="LastName">
+        <input type="text" class="form-control" id="LastName" placeholder="Enter last name">
     </div>
     @*@Adding a inline account type dropbox*@
- 
-        <div class="form-group">
-            <div class="form-inline">
-            <label class="col-sm-3" for="selDropBox1">Select Account Type: </label>
-            <select class="form-control" id="selDropBox1">
-                <option></option>
-                <option>Director</option>
-                <option>Staff</option>
-            </select>
-            </div>
+    <div class="form-group">
+        <div class="form-inline">
+        <label class="col-sm-3" for="selDropBox1">Select Account Type: </label>
+        <select class="form-control" id="selDropBox1">
+            <option></option>
+            <option>Director</option>
+            <option>Staff</option>
+        </select>
         </div>
-  
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: Director, Staff</small>
+        </div>
+    </div>
     @*Adding a inline center dropbox*@
     <div class="form-group">
         <div class="form-inline">
@@ -33,32 +34,42 @@
                 <option>Center2</option>
             </select>
         </div>
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Current centers in the database</small>
+        </div>
     </div>
     @*Adding email textfield*@
     <div class="form-group">
         <label class="col-sm-3" for="Email:">Email:</label>
-        <input type="text" id="Email">
+        <input type="text" class="form-control" id="Email" placeholder="Enter email address">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: mesa@yahoo.com</small>
+        </div>
     </div>
     @*Adding phone number textfield*@
     <div class="form-group">
         <label class="col-sm-3" for="PhoneNumber">Phone Number:</label>
-        <input type="text" id="PhoneNumber">
+        <input type="text" class="form-control" id="PhoneNumber" placeholder="Enter phone number">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: 9165555555</small>
+        </div>
     </div>
     @*Adding username textfield*@
     <div class="form-group">
         <label class="col-sm-3" for="Username">Username:</label>
-        <input type="text" id="Username">
+        <input type="text" class="form-control" id="Username" placeholder="Enter username">
     </div>
     @*Adding password textfield*@
     <div class="form-group">
         <label class="col-sm-3" for="Password">Password:</label>
-        <input type="text" id="Password">
+        <input type="text" class="form-control" id="Password" placeholder="Enter password">
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Please use a combination of letters, numbers, symbols</small>
+        </div>
     </div>
 </form>
 @*Adding add account and back buttons*@
 <fieldset>
     @*Adding a create account button that will add the new account to the database*@
     <button type="submit" value="Create Account" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Create</button>
-    @*Adding a back button that takes user to the ManageAccounts content page*@
-    <button type="submit" value="Back" onclick="location.href='@Url.Action("ManageAccounts", "Admin")'" class="btn btn-primary">Back</button>
 </fieldset>
