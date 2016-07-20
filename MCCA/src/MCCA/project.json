@@ -35,8 +35,12 @@
   },
 
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.configuration": "4.0.0.0"
+      }
+    },
+    "dnxcore50": {}
   },
 
   "exclude": [
@@ -46,5 +50,11 @@
   "publishExclude": [
     "**.user",
     "**.vspscc"
-  ]
+  ],
+  "ConnectionStrings": {
+    "dataSource": "tcp:mcca.database.windows.net,1433",
+    "databaseName": "MCCA Database",
+    "Admin": "whitej",
+    "Password": "SacMesa416275"
+  }
 }

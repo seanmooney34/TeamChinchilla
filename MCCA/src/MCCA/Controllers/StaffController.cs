@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+using Microsoft.AspNet.Authorization;
 
 namespace MCCA.Controllers
-{
+{ 
     public class StaffController : Controller
     {
         // GET: /<controller>/
