@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MCCA.Models;
 using MCCA.Services;
+using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Http;
 
 namespace MCCA
 {
@@ -99,9 +101,16 @@ namespace MCCA
             app.UseStaticFiles();
 
             app.UseIdentity();
-
+            //Added this for cookie authentication
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
-
+            app.UseCookieAuthentication(new CookieAuthenticationOptions()
+            {
+                AuthenticationScheme = "MyCookieMiddlewareInstance",
+                LoginPath = new PathString("/Account/Unauthorized/"),
+                AccessDeniedPath = new PathString("/Account/Forbidden/"),
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

@@ -17,14 +17,13 @@ using MCCA.Services;
 using MCCA.ViewModels.Account;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace MCCA.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
-        private User user = new User();
-
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
@@ -35,39 +34,53 @@ namespace MCCA.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             User foundUser = new Models.User();
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+                //Getting the a User from the SQL database whose username and password match those provided
                 foundUser = sqlConnection(model.Username, model.Password);
                 //There is a chance that an empty User object may be given due connection issues or incorrect login information
                 //is given, so one of the assigned User properties (AccountType) is checked. If the checked User property
-                //is null, then the ViewModel is simply sent to the View. 
+                //is null, then the ViewModel model is simply sent to the View. 
                 if (foundUser.AccountType != null)
                 {
-                    if (foundUser.AccountType.Contains("Admin"))
+                    if (foundUser.AccountType.Equals("Admin"))
                     {
-                        return RedirectToAction(nameof(AdminController.Index), "Admin");
+                        /*ClaimsIdentity identity = new ClaimsIdentity("Admin", "Admin", "Admin");
+                        ClaimsPrincipal principal = new ClaimsPrincipal();
+                        principal.AddIdentity(identity);
+                     
+                        await HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", principal, 
+                        new AuthenticationProperties
+                        {
+                            ExpiresUtc = DateTime.UtcNow.AddMinutes(1)
+                        });
+                        if (User.IsInRole("Admin"))
+                        {
+                            ViewData["Connection"] = "successful";
+                        }*/
+                        return RedirectToAction(nameof(AdminController.Index), "Admin", new { ID = foundUser.ID, firstName = foundUser.FirstName, lastName = foundUser.LastName });
                     }
-                    else if (foundUser.AccountType.Contains("Director"))
+                    else if (foundUser.AccountType.Equals("Director"))
                     {
-                        return RedirectToAction(nameof(DirectorController.Index), "Director");
+                        return RedirectToAction(nameof(DirectorController.Index), "Director", new { ID = foundUser.ID, firstName = foundUser.FirstName, lastName = foundUser.LastName });
                     }
-                    else if (foundUser.AccountType.Contains("Staff"))
+                    else if (foundUser.AccountType.Equals("Staff"))
                     {
-                        return RedirectToAction(nameof(StaffController.Index), "Staff");
+                        return RedirectToAction(nameof(StaffController.Index), "Staff", new { ID = foundUser.ID, firstName = foundUser.FirstName, lastName = foundUser.LastName });
                     }
                 }
             }
             return View(model);
         }
-        //This methold attempts to connect to the SQL database and returns a boolean if it succeeded
-        private User sqlConnection(String _username, String _password)
+        //This methold attempts to connect to the SQL database and returns a User object
+        private User sqlConnection(String username, String password)
         {
-            String username = _username;
-            String password = _password;
+            String _username = username;
+            String _password = password;
             User foundUser = new Models.User();
             int totalNumberOfTimesToTry = 3;
             int retryIntervalSeconds = 1;
@@ -81,7 +94,7 @@ namespace MCCA.Controllers
                         T.Thread.Sleep(1000 * retryIntervalSeconds);
                         retryIntervalSeconds = Convert.ToInt32(retryIntervalSeconds * 1.5);
                     }
-                    foundUser = accessDatabase(username, password);
+                    foundUser = accessDatabase(_username, _password);
                     //Break if an account from the SQL database was found 
                     if (foundUser.AccountType != null)
                     {
@@ -98,30 +111,33 @@ namespace MCCA.Controllers
         }
         //This method connects to the database, reads the database and finding an entry with the same information
         //as the provided username and password and returns a User object with some information 
-        private User accessDatabase(string _username, string _password)
+        private User accessDatabase(string username, string password)
         {
-            String username = _username;
-            String password = _password;
+            String _username = username;
+            String _password = password;
             User foundUser = new Models.User();
             using (var sqlConnection = new S.SqlConnection(GetSqlConnectionString()))
             {
                 using (var dbCommand = sqlConnection.CreateCommand())
                 {
+                    //Opening SQL connection
                     sqlConnection.Open();
+                    //Creating SQL query
                     dbCommand.CommandText = @"SELECT * FROM Users WHERE Username = @username AND Password = @password";
-                    dbCommand.Parameters.AddWithValue("@username", username);
-                    dbCommand.Parameters.AddWithValue("@password", password);
+                    dbCommand.Parameters.AddWithValue("@username", _username);
+                    dbCommand.Parameters.AddWithValue("@password", _password);
                     //Building data reader
                     var dataReader = dbCommand.ExecuteReader();
-                    bool count = dataReader.HasRows;
-
                     //Advancing to the next record which is the first and only record in this case
                     dataReader.Read();
                     //Storing information from found sql entry into a User object and returning it
+                    //I trim all of the found User data because the SQL server seems to add spaces.
                     foundUser.ID = dataReader.GetInt32(0);
-                    foundUser.FirstName = dataReader.GetString(1);
-                    foundUser.LastName = dataReader.GetString(2);
-                    foundUser.AccountType = dataReader.GetString(3);
+                    foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
+                    foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
+                    foundUser.AccountType = dataReader.GetString(3). Trim(' ');
+                    //Closing SQL connectioon
+                    sqlConnection.Close();
                 }
                 return foundUser;
             }
@@ -138,27 +154,19 @@ namespace MCCA.Controllers
 
             sqlConnectionSB.UserID = "whitej";  // "@yourservername"  as suffix sometimes.  
             sqlConnectionSB.Password = "SacMesa416275";
-            //Connecting to the SQL database with connection strings accessed by a Configuration Manager through the
-            //web.config file, but the latest version of Microsoft Visual no longer allows this so I can't test this.
-            /*ConnectionStringSettings dataSource = ConfigurationManager.ConnectionStrings["Data Source"];
-            ConnectionStringSettings databaseName = ConfigurationManager.ConnectionStrings["Database Name"];
-            ConnectionStringSettings admin = ConfigurationManager.ConnectionStrings["Admin"];
-            ConnectionStringSettings password = ConfigurationManager.ConnectionStrings["Password"];
-            sqlConnectionSB.DataSource = dataSource.ToString(); //["Server"]  
-            sqlConnectionSB.InitialCatalog = databaseName.ToString(); //["Database"] 
-
-            sqlConnectionSB.UserID = admin.ToString();  // "@yourservername"  as suffix sometimes.  
-            sqlConnectionSB.Password = password.ToString();*/
+            
             //Connecting to the SQL database with connection strings accessed by a Configuration Builder by grabbing
             //the connection strings through the project.json file, but it does not seem to work
             /*var builder = new ConfigurationBuilder();
             builder.SetBasePath(Directory.GetCurrentDirectory());
-            builder.AddJsonFile("project.json");
-            var config = builder.Build();
-            String dataSource = config["dataSource"];
-            String databaseName = config["databaseName"];
-            String admin = config["Admin"];
-            String password = config["Password"];
+            builder.AddJsonFile("appsettings.json");
+            var connectionStringConfig = builder.Build();
+            //connectionStringConfig.GetSection("ConnectionStrings");
+            
+            String dataSource = connectionStringConfig["ConnectionStrings:dataSource"];
+            String databaseName = connectionStringConfig["ConnectionStringsdatabaseName"];
+            String admin = connectionStringConfig["ConnectionStringsAdmin"];
+            String password = connectionStringConfig["ConnectionStringsPassword"];
             sqlConnectionSB.DataSource = dataSource; //["Server"]  
             sqlConnectionSB.InitialCatalog = databaseName; //["Database"]  
 
@@ -176,6 +184,17 @@ namespace MCCA.Controllers
             sqlConnectionSB.ConnectTimeout = 30;
 
             return sqlConnectionSB.ToString();
+        }
+        private IActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
         }
         /* public AccountController(
               UserManager<ApplicationUser> userManager,
