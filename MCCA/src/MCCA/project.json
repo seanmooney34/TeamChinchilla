@@ -39,8 +39,7 @@
       "frameworkAssemblies": {
         "System.configuration": "4.0.0.0"
       }
-    },
-    "dnxcore50": {}
+    }
   },
 
   "exclude": [

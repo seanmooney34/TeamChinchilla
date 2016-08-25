@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Data.Entity;
@@ -16,7 +17,6 @@ using MCCA.Models;
 using MCCA.Services;
 using MCCA.ViewModels.Account;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 using Microsoft.AspNet.Http.Authentication;
 
 namespace MCCA.Controllers
@@ -24,6 +24,15 @@ namespace MCCA.Controllers
     [Authorize]
     public class AccountController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ILogger _logger;
+        public AccountController(UserManager<ApplicationUser> userManager,SignInManager<ApplicationUser> signInManager,ILoggerFactory loggerFactory)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = loggerFactory.CreateLogger<AccountController>();
+        }
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
@@ -49,34 +58,72 @@ namespace MCCA.Controllers
                 {
                     if (foundUser.AccountType.Equals("Admin"))
                     {
-                        /*ClaimsIdentity identity = new ClaimsIdentity("Admin", "Admin", "Admin");
+                        //For some reason, I can't create an account in the local database, and log-in the user
+                        /*var user = new ApplicationUser() { UserName = foundUser.Email, Email = foundUser.Email };
+                        var result = await _userManager.CreateAsync(user, foundUser.Password);
+                        if (result.Succeeded)
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                            ViewData["Connection"] = "successful";
+                        }
+                        else
+                        {
+                            //AddErrors(result);
+                            ViewData["Connection"] = "failure";
+                        }*/
+                        //Creating an Identity
+                        ClaimsIdentity identity = new ClaimsIdentity("Admin", "Admin", "Admin");
                         ClaimsPrincipal principal = new ClaimsPrincipal();
                         principal.AddIdentity(identity);
-                     
+                        //Creating cookie and signing in
                         await HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", principal, 
                         new AuthenticationProperties
                         {
-                            ExpiresUtc = DateTime.UtcNow.AddMinutes(1)
+                            ExpiresUtc = DateTime.UtcNow.AddMinutes(60)
                         });
-                        if (User.IsInRole("Admin"))
-                        {
-                            ViewData["Connection"] = "successful";
-                        }*/
+                        //Sending successfully logged in user to Admin account dashboard
                         return RedirectToAction(nameof(AdminController.Index), "Admin", new { ID = foundUser.ID, firstName = foundUser.FirstName, lastName = foundUser.LastName });
                     }
                     else if (foundUser.AccountType.Equals("Director"))
                     {
-                        return RedirectToAction(nameof(DirectorController.Index), "Director", new { ID = foundUser.ID, firstName = foundUser.FirstName, lastName = foundUser.LastName });
+                        //Creating an Identity
+                        ClaimsIdentity identity = new ClaimsIdentity("Director", "Director", "Director");
+                        ClaimsPrincipal principal = new ClaimsPrincipal();
+                        principal.AddIdentity(identity);
+                        //Creating cookie and signing in
+                        await HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", principal,
+                        new AuthenticationProperties
+                        {
+                            ExpiresUtc = DateTime.UtcNow.AddMinutes(60)
+                        });
+                        //Sending successfully logged in user to Director account dashboard
+                        return RedirectToAction(nameof(DirectorController.Index), "Director", new { ID = foundUser.ID, center = foundUser.Center, firstName = foundUser.FirstName, lastName = foundUser.LastName });
                     }
                     else if (foundUser.AccountType.Equals("Staff"))
                     {
+                        //Creating an Identity
+                        ClaimsIdentity identity = new ClaimsIdentity("Staff", "Staff", "Staff");
+                        ClaimsPrincipal principal = new ClaimsPrincipal();
+                        principal.AddIdentity(identity);
+                        //Creating cookie and signing in
+                        await HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", principal,
+                        new AuthenticationProperties
+                        {
+                            ExpiresUtc = DateTime.UtcNow.AddMinutes(60)
+                        });
+                        //Sending successfully logged in user to Staff account dashboard
                         return RedirectToAction(nameof(StaffController.Index), "Staff", new { ID = foundUser.ID, firstName = foundUser.FirstName, lastName = foundUser.LastName });
                     }
                 }
             }
             return View(model);
         }
-        //This methold attempts to connect to the SQL database and returns a User object
+        public async Task<IActionResult> LogOff()
+        {
+            await HttpContext.Authentication.SignOutAsync("MyCookieMiddlewareInstance");
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
+        //This method attempts to connect to the SQL database and returns a User object
         private User sqlConnection(String username, String password)
         {
             String _username = username;
@@ -135,7 +182,11 @@ namespace MCCA.Controllers
                     foundUser.ID = dataReader.GetInt32(0);
                     foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
                     foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
-                    foundUser.AccountType = dataReader.GetString(3). Trim(' ');
+                    foundUser.AccountType = dataReader.GetString(3).TrimEnd(' ');
+                    foundUser.Center = dataReader.GetString(4).TrimEnd(' ');
+                    foundUser.Email = dataReader.GetString(5).TrimEnd();
+                    foundUser.Username = dataReader.GetString(7).TrimEnd(' ');
+                    foundUser.Password = dataReader.GetString(8).TrimEnd();
                     //Closing SQL connectioon
                     sqlConnection.Close();
                 }
@@ -148,30 +199,22 @@ namespace MCCA.Controllers
         {
             // Prepare the connection string to Azure SQL Database.  
             var sqlConnectionSB = new S.SqlConnectionStringBuilder();
-            //Connecting to the SQL database with hard-coded strings, but it is not a secure method
-            sqlConnectionSB.DataSource = "tcp:mcca.database.windows.net,1433"; //["Server"]  
-            sqlConnectionSB.InitialCatalog = "MCCA Database"; //["Database"]  
-
-            sqlConnectionSB.UserID = "whitej";  // "@yourservername"  as suffix sometimes.  
-            sqlConnectionSB.Password = "SacMesa416275";
-            
             //Connecting to the SQL database with connection strings accessed by a Configuration Builder by grabbing
-            //the connection strings through the project.json file, but it does not seem to work
-            /*var builder = new ConfigurationBuilder();
-            builder.SetBasePath(Directory.GetCurrentDirectory());
+            //the connection strings through the appsettings.json file
+            var builder = new ConfigurationBuilder();
             builder.AddJsonFile("appsettings.json");
             var connectionStringConfig = builder.Build();
-            //connectionStringConfig.GetSection("ConnectionStrings");
+            connectionStringConfig.GetSection("ConnectionStrings");
             
             String dataSource = connectionStringConfig["ConnectionStrings:dataSource"];
-            String databaseName = connectionStringConfig["ConnectionStringsdatabaseName"];
-            String admin = connectionStringConfig["ConnectionStringsAdmin"];
-            String password = connectionStringConfig["ConnectionStringsPassword"];
+            String databaseName = connectionStringConfig["ConnectionStrings:databaseName"];
+            String admin = connectionStringConfig["ConnectionStrings:Admin"];
+            String password = connectionStringConfig["ConnectionStrings:Password"];
             sqlConnectionSB.DataSource = dataSource; //["Server"]  
             sqlConnectionSB.InitialCatalog = databaseName; //["Database"]  
 
-            sqlConnectionSB.UserID = admin;  // "@yourservername"  as suffix sometimes.  
-            sqlConnectionSB.Password = password;*/
+            sqlConnectionSB.UserID = admin;    
+            sqlConnectionSB.Password = password;
             sqlConnectionSB.IntegratedSecurity = false;
 
             // Adjust these values if you like. (ADO.NET 4.5.1 or later.)  

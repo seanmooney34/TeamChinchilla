@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MCCA.ViewModels.Director
 {
-    public class ManagePersonalAccountViewModel
+    public class EditViewModel
     {
         [Required]
         [StringLength(12)]
@@ -14,7 +14,9 @@ namespace MCCA.ViewModels.Director
         [Required]
         [StringLength(12)]
         public string LastName { get; set; }
+        [Required]
         public string AccountType { get; set; }
+        [Required]
         [StringLength(50)]
         public string Center { get; set; }
         [Required]
@@ -24,6 +26,7 @@ namespace MCCA.ViewModels.Director
         [StringLength(12)]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
+        [Required]
         [StringLength(12)]
         public string Username { get; set; }
         [Required]
@@ -36,3 +39,4 @@ namespace MCCA.ViewModels.Director
         public string ConfirmPassword { get; set; }
     }
 }
+

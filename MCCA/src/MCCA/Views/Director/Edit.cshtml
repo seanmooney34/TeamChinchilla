@@ -1,48 +1,63 @@
-﻿@model MCCA.ViewModels.Director.ManagePersonalAccountViewModel
+﻿@model MCCA.ViewModels.Director.EditViewModel
 @{
-    ViewData["Title"] = "Manage Personal Account";
+    ViewData["Title"] = "Edit";
 }
-<h2>Manage Personal Account</h2>
-<form asp-controller="Director" asp-action="ManagePersonalAccount" method="post" class="form-horizontal" role="form">
-    @*Adding a first name textfield*@
+<h2>Edit</h2>
+<form class="form-horizontal">
+    @*Adding First name textfield*@
     <div class="form-group">
         <label asp-for="FirstName" class="col-sm-3">First Name:</label>
         <input asp-for="FirstName" class="form-control" value="@ViewData["firstName"].ToString()"/>
         <span asp-validation-for="FirstName" class="text-danger"></span>
     </div>
-    @*Adding a last name textfield*@
+    @*Adding Last name textfield*@
     <div class="form-group">
         <label asp-for="LastName" class="col-sm-3">Last Name:</label>
         <input asp-for="LastName" class="form-control" value="@ViewData["lastName"].ToString()"/>
         <span asp-validation-for="LastName" class="text-danger"></span>
     </div>
-    @*@Adding a account type textfield*@
+    @*@Adding a inline account type dropbox*@
     <div class="form-group">
-        <label asp-for="AccountType" class="col-sm-3">Account Type:</label>
-        <input asp-for="AccountType" class="form-control" value="@ViewData["accountType"].ToString()" style="background-color:#999" disabled/>
+        <div class="form-inline">
+            <label asp-for="AccountType" class="col-sm-3">Account Type:</label>
+            <select asp-for="AccountType" class="form-control">
+                <option>Staff</option>
+            </select>
+        </div>
+        <span asp-validation-for="AccountType" class="text-danger"></span>
     </div>
-    @*Adding center textfield*@
+    @*Adding a inline center dropbox*@
     <div class="form-group">
-        <label asp-for="Center" class="col-sm-3">Center:</label>
-        <input asp-for="Center" class="form-control" value="@ViewData["center"].ToString()" style="background-color:#999" disabled/>
+        <div class="form-inline">
+            <label asp-for="Center" class="col-sm-3">Center:</label>
+            <select asp-for="Center" class="form-control" >
+                <option>@ViewData["center"].ToString()</option>
+            </select>
+        </div>
         <span asp-validation-for="Center" class="text-danger"></span>
     </div>
-    @*Adding a email textfield*@
+    @*Adding email textfield*@
     <div class="form-group">
         <label asp-for="Email" class="col-sm-3">Email:</label>
         <input asp-for="Email" class="form-control" value="@ViewData["email"].ToString()"/>
         <span asp-validation-for="Email" class="text-danger"></span>
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: mesa@yahoo.com</small>
+        </div>
     </div>
-    @*Adding a phone number textfield*@
+    @*Adding phone number textfield*@
     <div class="form-group">
         <label asp-for="PhoneNumber" class="col-sm-3">Phone Number:</label>
         <input asp-for="PhoneNumber" class="form-control" value="@ViewData["phoneNumber"].ToString()"/>
         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Example: 916-555-5555</small>
+        </div>
     </div>
-    @*Adding a username textfield*@
+    @*Adding username textfield*@
     <div class="form-group">
         <label asp-for="Username" class="col-sm-3">Username:</label>
-        <input asp-for="Username" class="form-control" value="@ViewData["userName"].ToString()" style="background-color:#999" disabled/>
+        <input asp-for="Username" class="form-control" value="@ViewData["userName"].ToString()"/>
         <span asp-validation-for="Username" class="text-danger"></span>
     </div>
     @*Adding password textfield*@
@@ -50,6 +65,9 @@
         <label asp-for="Password" class="col-sm-3">Password:</label>
         <input asp-for="Password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Please use a combination of letters, numbers, symbols</small>
+        </div>
     </div>
     @*Adding confirmation password textfield*@
     <div class="form-group">
@@ -57,13 +75,11 @@
         <input asp-for="ConfirmPassword" class="form-control" />
         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
     </div>
-    @*Adding save and delete buttons*@
+    @*Adding add account button*@
     <div class="form-group">
-        <button style="margin-left:15px" type="submit" class="btn btn-primary">Save</button> |
-        <a asp-action="DeletePersonalAccount">Delete Account</a>
+        <button style="margin-left:15px" type="submit" class="btn btn-primary">Save</button>
     </div>
 </form>
-@*Adding save, delete buttons*@
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

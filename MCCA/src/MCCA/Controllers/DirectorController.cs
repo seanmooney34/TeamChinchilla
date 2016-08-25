@@ -8,51 +8,142 @@ using MCCA.Models;
 using S = System.Data.SqlClient;
 using T = System.Threading;
 using MCCA.ViewModels.Director;
+using Microsoft.Extensions.Configuration;
 
 namespace MCCA.Controllers
-{ 
+{
+    //[Authorize(Roles = "Director")]
+    [Authorize]
     public class DirectorController : Controller
     {
         //Used for personal account management
         private static int directorID;
+        //Used for center accounts management
+        private static String directorCenter;
         //This method is a simple hello to the user when he or she signs in as well as saving the ID for personal account
         //management
-        public IActionResult Index(int ID, String firstName, String lastName)
+        public IActionResult Index(int ID, String center, String firstName, String lastName)
         {
             directorID = ID;
+            directorCenter = center;
             ViewData["firstName"] = firstName;
             ViewData["lastName"] = lastName;
             return View();
         }
-        public IActionResult ManageAccounts()
+        public IActionResult ManageAccounts(String name, String sortOrder)
         {
+
+            List<User> userList = new List<User>();
+            List<User> searchList = new List<User>();
+            //Storing Director center in ViewData to be used to prevent those not in the Director's center from
+            //appearing in the managable User list
+            ViewData["directorCenter"] = directorCenter;
+            //Storing the List object returned which contains all Users
+            userList = sqlConnectionForUsersList();
+            //If the search text bar passes a value, then a list is created and passed into the view containing
+            //users whose names contain the given search input
+            if (String.IsNullOrEmpty(name) == false)
+            {
+                foreach (User member in userList)
+                {
+                    String username = member.FirstName + " " + member.LastName;
+                    if (username.Contains(name))
+                    {
+                        searchList.Add(member);
+                    }
+                }
+                userList = searchList;
+            }
+            //If there is no value passed in the search text bar, sorting the list of Users is based on given sort 
+            //button clicks with the list being ordered by account type by default 
+            if (String.IsNullOrEmpty(name) == true)
+            {
+                switch (sortOrder)
+                {
+                    case "First Name":
+                        {
+                            userList.Sort(delegate (User x, User y)
+                            {
+                                return x.FirstName.CompareTo(y.FirstName);
+                            });
+                            break;
+                        }
+                    case "Last Name":
+                        {
+                            userList.Sort(delegate (User x, User y)
+                            {
+                                return x.LastName.CompareTo(y.LastName);
+                            });
+                            break;
+                        }
+                    default:
+                        {
+                            userList.Sort(delegate (User x, User y)
+                            {
+                                return x.AccountType.CompareTo(y.AccountType);
+                            });
+                            break;
+                        }
+                }
+            }
+            return View(userList);
+        }
+        //This method adds an account with provided information to the SQL database and redirects user to ManageAccounts
+        //if successful
+        public IActionResult AddAccount(AddAccountViewModel model)
+        {
+            //Storing Director center into ViewData to be used for the only center option in account creation
+            ViewData["directorCenter"] = directorCenter;
+            Boolean success = false;
+            User newUser = new Models.User();
+            //ID initialized for comparison
+            int ID = 0;
+            //SortedList<String, User> userSortedList = new SortedList<string, User>();
+            List<User> userList = new List<User>();
+            //Storing the SortedList object returned which contains all Users
+            userList = sqlConnectionForUsersList();
+            //ID is compared with the ID value of all Users and if ID is less, than replace the ID value.
+            //This is to get the highest ID value given to a User
+            foreach (var item in userList)
+            {
+                if (ID < item.ID)
+                {
+                    ID = item.ID;
+                }
+            }
+            //ID is incremented afterward so it will always be higher than the highest ID value given to a User.
+            //For this reason ID will always be unique.
+            ID += 1;
+            newUser.FirstName = model.FirstName;
+            newUser.LastName = model.LastName;
+            newUser.AccountType = model.AccountType;
+            newUser.Center = model.Center;
+            newUser.Email = model.Email;
+            newUser.PhoneNumber = model.PhoneNumber;
+            newUser.Username = model.Username;
+            newUser.Password = model.Password;
+            success = sqlConnectionAddUser(ID, newUser);
+            if (success == true)
+            {
+                return RedirectToAction("ManageAccounts");
+            }
             return View();
         }
-        public IActionResult AddAccount()
-        {
-            return View();
-        }
-        public IActionResult ManageSite()
-        {
-            return View();
-        }
-        //This method allows the User to edit personal account information, save the changes to the SQL database and
-        //refreshes the page for the User showing the update informatin if successful
-        public IActionResult ManagePersonalAccount(ManagePersonalAccountViewModel model)
+        //This method allows the Admin to edit accounts displayed in Manage Accounts
+        public IActionResult Edit(int ID, EditViewModel model)
         {
             Boolean success = false;
             User foundUser = new Models.User();
             User updatedUser = new Models.User();
-            //Getting SQL table entry based on User ID
-            foundUser = sqlConnectionForUser(directorID);
-            //Storing the information in ViewData to be used to pre-fill the Manage Personal Account form
-            ViewData["firstName"] = foundUser.FirstName.TrimEnd(' ');
-            ViewData["lastName"] = foundUser.LastName.TrimEnd(' ');
-            ViewData["accountType"] = foundUser.AccountType.TrimEnd(' ');
-            ViewData["center"] = foundUser.Center.TrimEnd(' ');
-            ViewData["email"] = foundUser.Email.TrimEnd(' ');
-            ViewData["phoneNumber"] = foundUser.PhoneNumber.TrimEnd(' ');
-            ViewData["userName"] = foundUser.Username.TrimEnd(' ');
+            foundUser = sqlConnectionForUser(ID);
+            //Storing the information in ViewData to be used to fill in the Edit form
+            ViewData["firstName"] = foundUser.FirstName;
+            ViewData["lastName"] = foundUser.LastName;
+            ViewData["center"] = foundUser.Center;
+            ViewData["email"] = foundUser.Email;
+            ViewData["phoneNumber"] = foundUser.PhoneNumber;
+            ViewData["userName"] = foundUser.Username;
+            ViewData["Test"] = model.FirstName;
             //Getting ViewModel model information given in the textfields of the Manage Personal Account page
             updatedUser.FirstName = model.FirstName;
             updatedUser.LastName = model.LastName;
@@ -63,12 +154,77 @@ namespace MCCA.Controllers
             updatedUser.Username = model.Username;
             updatedUser.Password = model.Password;
             //Getting Boolean result of SQL entry information update
-            success = sqlConnectionUpdateUser(directorID, updatedUser);
-            //If the update was successful, redirect the User to the Manage Personal Account View to refresh the page
-            //with the updated information.
+            success = sqlConnectionUpdateUser(ID, updatedUser);
+            //If the update was successful, redirect the User to the Manage Accounts page
             if (success == true)
             {
-                return RedirectToAction("ManagePersonalAccount");
+                return RedirectToAction("ManageAccounts");
+            }
+            return View(model);
+        }
+        //This method sends an entry's information from Manage Accounts into the View when the Delete link is clicked on
+        public IActionResult Delete(int ID)
+        {
+            User foundUser = new Models.User();
+            //success = accessDatabaseToDeleteUser(ID);
+            foundUser = sqlConnectionForUser(ID);
+            return View(foundUser);
+        }
+        //This method deletes the user from the system if the delete button in the Edit View is clicked on and sends the User
+        //to Manage Accounts
+        [HttpPost, ActionName("Delete")]
+        public IActionResult DeleteConfirmed(User model)
+        {
+            Boolean success = false;
+            if (model != null)
+            {
+                success = accessDatabaseToDeleteUser(model.ID);
+            }
+            if (success == true)
+            {
+                return RedirectToAction("ManageAccounts");
+            }
+            return RedirectToAction("Edit", new { ID = model.ID });
+        }
+        public IActionResult ManageSite()
+        {
+            return View();
+        }
+        //This method allows the User to edit personal account information, save the changes to the SQL database and
+        //refreshes the page for the User showing the update information if successful
+        public IActionResult ManagePersonalAccount(ManagePersonalAccountViewModel model)
+        {
+            Boolean success = false;
+            User foundUser = new Models.User();
+            User updatedUser = new Models.User();
+            //Getting SQL table entry based on User ID
+            foundUser = sqlConnectionForUser(directorID);
+            //Storing the information in ViewData to be used to pre-fill the Manage Personal Account form
+            ViewData["firstName"] = foundUser.FirstName;
+            ViewData["lastName"] = foundUser.LastName;
+            ViewData["accountType"] = foundUser.AccountType;
+            ViewData["center"] = foundUser.Center;
+            ViewData["email"] = foundUser.Email;
+            ViewData["phoneNumber"] = foundUser.PhoneNumber;
+            ViewData["userName"] = foundUser.Username;
+            //Getting ViewModel model information given in the textfields of the Manage Personal Account page that a Director
+            //is allowed to change
+            //The model's first name is checked to verify if the model object is null to prevent unnecessary SQL database access
+            if (model.FirstName != null)
+            {
+                updatedUser.FirstName = model.FirstName;
+                updatedUser.LastName = model.LastName;
+                updatedUser.Email = model.Email;
+                updatedUser.PhoneNumber = model.PhoneNumber;
+                updatedUser.Password = model.Password;
+                //Getting Boolean result of SQL entry information update
+                success = sqlConnectionUpdateUser(directorID, updatedUser);
+                //If the update was successful, redirect the User to the Manage Personal Account View to refresh the page
+                //with the updated information.
+                if (success == true)
+                {
+                    return RedirectToAction("ManagePersonalAccount");
+                }
             }
             return View();
         }
@@ -140,14 +296,14 @@ namespace MCCA.Controllers
                     //Advancing to the next record which is the first and only record in this case
                     dataReader.Read();
                     //Storing information from found sql entry into a User object and returning it
-                    foundUser.FirstName = dataReader.GetString(1);
-                    foundUser.LastName = dataReader.GetString(2);
-                    foundUser.AccountType = dataReader.GetString(3);
-                    foundUser.Center = dataReader.GetString(4);
-                    foundUser.Email = dataReader.GetString(5);
-                    foundUser.PhoneNumber = dataReader.GetString(6);
-                    foundUser.Username = dataReader.GetString(7);
-                    foundUser.Password = dataReader.GetString(8);
+                    foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
+                    foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
+                    foundUser.AccountType = dataReader.GetString(3).TrimEnd(' ');
+                    foundUser.Center = dataReader.GetString(4).TrimEnd(' ');
+                    foundUser.Email = dataReader.GetString(5).TrimEnd(' ');
+                    foundUser.PhoneNumber = dataReader.GetString(6).TrimEnd(' ');
+                    foundUser.Username = dataReader.GetString(7).TrimEnd(' ');
+                    foundUser.Password = dataReader.GetString(8).TrimEnd(' ');
                     //Closing SQL connection
                     sqlConnection.Close();
                 }
@@ -199,18 +355,16 @@ namespace MCCA.Controllers
                     sqlConnection.Open();
                     //Creating SQL query that updates the SQL table entry and returns the updated table entry
                     dbCommand.CommandText = @"UPDATE Users 
-                                              SET FirstName = @FirstName, LastName = @LastName, Center = @Center, Email = @Email,
-                                                  PhoneNumber = @PhoneNumber, Username = @Username, Password = @Password
+                                              SET FirstName = @FirstName, LastName = @LastName, Email = @Email,
+                                                  PhoneNumber = @PhoneNumber, Password = @Password
                                               WHERE ID = @ID
                                               SELECT * FROM Users WHERE ID = @ID";
                     //Updating User information based on comparison with current and new User information
                     //I trim the end of all fields to remove empty spaces
                     dbCommand.Parameters.AddWithValue("@FirstName", updatedUser.FirstName.TrimEnd(' '));
                     dbCommand.Parameters.AddWithValue("@LastName", updatedUser.LastName.TrimEnd(' '));
-                    dbCommand.Parameters.AddWithValue("@Center", updatedUser.Center.TrimEnd(' '));
                     dbCommand.Parameters.AddWithValue("@Email", updatedUser.Email.TrimEnd(' '));
                     dbCommand.Parameters.AddWithValue("@PhoneNumber", updatedUser.PhoneNumber.TrimEnd(' '));
-                    dbCommand.Parameters.AddWithValue("@UserName", updatedUser.Username.TrimEnd(' '));
                     dbCommand.Parameters.AddWithValue("@Password", updatedUser.Password.TrimEnd(' '));
                     //Specifing update by ID number to ensure correct User's information is updated
                     dbCommand.Parameters.AddWithValue("@ID", ID);
@@ -218,24 +372,22 @@ namespace MCCA.Controllers
                     var dataReader = dbCommand.ExecuteReader();
                     dataReader.Read();
                     //Getting the updated SQL entry information for comparison testing to verify the update was successful
-                    foundUser.FirstName = dataReader.GetString(1);
-                    foundUser.LastName = dataReader.GetString(2);
-                    foundUser.AccountType = dataReader.GetString(3);
-                    foundUser.Center = dataReader.GetString(4);
-                    foundUser.Email = dataReader.GetString(5);
-                    foundUser.PhoneNumber = dataReader.GetString(6);
-                    foundUser.Username = dataReader.GetString(7);
-                    foundUser.Password = dataReader.GetString(8);
+                    //I trim all of the found User data because the SQL server seems to add spaces.
+                    foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
+                    foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
+                    foundUser.AccountType = dataReader.GetString(3).TrimEnd(' ');
+                    foundUser.Center = dataReader.GetString(4).TrimEnd(' ');
+                    foundUser.Email = dataReader.GetString(5).TrimEnd(' ');
+                    foundUser.PhoneNumber = dataReader.GetString(6).TrimEnd(' ');
+                    foundUser.Username = dataReader.GetString(7).TrimEnd(' ');
+                    foundUser.Password = dataReader.GetString(8).TrimEnd(' ');
                     //Determining if the update was successfully executed by checking if an entry is returned and comparing
                     //all of the returned entry's information with the updated information provided by the user.
-                    //I trim all of the found User data because the SQL server seems to add spaces.
-                    if (dataReader.HasRows == true && updatedUser.FirstName.Equals(foundUser.FirstName.ToString().TrimEnd(' ')) &&
-                        updatedUser.LastName.Equals(foundUser.LastName.ToString().TrimEnd(' ')) &&
-                        updatedUser.Center.Equals(foundUser.Center.ToString().TrimEnd(' ')) &&
-                        updatedUser.Email.Equals(foundUser.Email.ToString().TrimEnd(' ')) &&
-                        updatedUser.PhoneNumber.Equals(foundUser.PhoneNumber.ToString().TrimEnd(' ')) &&
-                        updatedUser.Username.Equals(foundUser.Username.ToString().TrimEnd(' ')) &&
-                        updatedUser.Password.Equals(foundUser.Password.ToString().TrimEnd(' ')))
+                    if (dataReader.HasRows == true && updatedUser.FirstName.Equals(foundUser.FirstName) &&
+                        updatedUser.LastName.Equals(foundUser.LastName) &&
+                        updatedUser.Email.Equals(foundUser.Email) &&
+                        updatedUser.PhoneNumber.Equals(foundUser.PhoneNumber) &&
+                        updatedUser.Password.Equals(foundUser.Password))
                     {
                         success = true;
                     }
@@ -243,6 +395,77 @@ namespace MCCA.Controllers
                     sqlConnection.Close();
                 }
                 return success;
+            }
+        }
+        //This method attempts to connect to the SQL database and returns a List object containing all Users
+        private List<User> sqlConnectionForUsersList()
+        {
+            //SortedList<String, User> userList = new SortedList<String, User>();
+            List<User> userList = new List<User>();
+            int totalNumberOfTimesToTry = 3;
+            int retryIntervalSeconds = 1;
+
+            for (int tries = 1; tries <= totalNumberOfTimesToTry; tries++)
+            {
+                try
+                {
+                    if (tries > 1)
+                    {
+                        T.Thread.Sleep(1000 * retryIntervalSeconds);
+                        retryIntervalSeconds = Convert.ToInt32(retryIntervalSeconds * 1.5);
+                    }
+                    userList = accessDatabaseForUsers();
+                    //Break if the List object is not empty
+                    if (userList.Count > 0)
+                    {
+                        break;
+                    }
+                }
+                //Break if there is an exception
+                catch (Exception Exc)
+                {
+                    break;
+                }
+            }
+            return userList;
+        }
+        //This method connects to the database, collects all the entries in the Users table into a list
+        //based on Users' account type and returns the list.
+        private List<User> accessDatabaseForUsers()
+        {
+            //SortedList<String, User> userList = new SortedList<String, User>();
+            List<User> userList = new List<User>();
+            using (var sqlConnection = new S.SqlConnection(GetSqlConnectionString()))
+            {
+                using (var dbCommand = sqlConnection.CreateCommand())
+                {
+                    //Opening SQL connection
+                    sqlConnection.Open();
+                    //Creating SQL query that updates the SQL table entry and returns the updated table entry
+                    dbCommand.CommandText = @"SELECT * FROM Users";
+                    var dataReader = dbCommand.ExecuteReader();
+                    var iterator = dataReader.GetEnumerator();
+                    while (iterator.MoveNext())
+                    {
+                        User foundUser = new Models.User();
+                        //Getting the SQL entry information 
+                        //I trim all of the found User data because the SQL server seems to add spaces.
+                        foundUser.ID = dataReader.GetInt32(0);
+                        foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
+                        foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
+                        foundUser.AccountType = dataReader.GetString(3).TrimEnd(' ');
+                        foundUser.Center = dataReader.GetString(4).TrimEnd(' ');
+                        foundUser.Email = dataReader.GetString(5).TrimEnd(' ');
+                        foundUser.PhoneNumber = dataReader.GetString(6).TrimEnd(' ');
+                        foundUser.Username = dataReader.GetString(7).TrimEnd(' ');
+                        foundUser.Password = dataReader.GetString(8).TrimEnd(' ');
+                        //Adding each User object to the sorted list using Account Type as the key
+                        userList.Add(foundUser);
+                    }
+                    //Closing SQL connection
+                    sqlConnection.Close();
+                }
+                return userList;
             }
         }
         //This method attempts to connect to the SQL database and returns a Boolean value regarding deletion confirmation
@@ -306,17 +529,117 @@ namespace MCCA.Controllers
                 return success;
             }
         }
+        //This method attempts to connect to the SQL database and a Boolean value regarding account creation confirmation
+        private Boolean sqlConnectionAddUser(int newID, User newUser)
+        {
+            Boolean success = false;
+            int totalNumberOfTimesToTry = 3;
+            int retryIntervalSeconds = 1;
+
+            for (int tries = 1; tries <= totalNumberOfTimesToTry; tries++)
+            {
+                try
+                {
+                    if (tries > 1)
+                    {
+                        T.Thread.Sleep(1000 * retryIntervalSeconds);
+                        retryIntervalSeconds = Convert.ToInt32(retryIntervalSeconds * 1.5);
+                    }
+                    success = accessDatabaseToAddUser(newID, newUser);
+                    //Break if an account added to the SQL database 
+                    if (success == true)
+                    {
+                        break;
+                    }
+                }
+                //Break if there is an exception
+                catch (Exception Exc)
+                {
+                    break;
+                }
+            }
+            return success;
+        }
+        //This method connects to the database, adds to the Users table, collects Users from the table for comparison,
+        //and returns Boolean value regarding success
+        private Boolean accessDatabaseToAddUser(int newID, User newUser)
+        {
+            Boolean success = false;
+            User foundUser = new Models.User();
+            using (var sqlConnection = new S.SqlConnection(GetSqlConnectionString()))
+            {
+                using (var dbCommand = sqlConnection.CreateCommand())
+                {
+                    //Opening SQL connection
+                    sqlConnection.Open();
+                    //Creating SQL query
+                    dbCommand.CommandText = @"INSERT INTO Users (ID, FirstName, LastName, AccountType, Center, Email, PhoneNumber, Username, Password)
+                                              Values (@ID, @FirstName, @LastName, @AccountType, @Center, @Email, @PhoneNumber, @Username, @Password)
+                                              Select * FROM Users WHERE ID = @ID";
+                    dbCommand.Parameters.AddWithValue("@ID", newID);
+                    //I trim the ends of empty spaces
+                    dbCommand.Parameters.AddWithValue("@FirstName", newUser.FirstName.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@LastName", newUser.LastName.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@AccountType", newUser.AccountType.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@Center", newUser.Center.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@Email", newUser.Email.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@PhoneNumber", newUser.PhoneNumber.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@Username", newUser.Username.TrimEnd(' '));
+                    dbCommand.Parameters.AddWithValue("@Password", newUser.Password.TrimEnd(' '));
+                    //Building data reader
+                    var dataReader = dbCommand.ExecuteReader();
+                    //Advancing to the next record which is the first and only record in this case
+                    dataReader.Read();
+                    //Storing information from found sql entry into a User object 
+                    //I trim all of the found User data because the SQL server seems to add spaces.
+                    foundUser.ID = dataReader.GetInt32(0);
+                    foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
+                    foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
+                    foundUser.AccountType = dataReader.GetString(3).TrimEnd(' ');
+                    foundUser.Center = dataReader.GetString(4).TrimEnd(' ');
+                    foundUser.Email = dataReader.GetString(5).TrimEnd(' ');
+                    foundUser.PhoneNumber = dataReader.GetString(6).TrimEnd(' ');
+                    foundUser.Username = dataReader.GetString(7).TrimEnd(' ');
+                    foundUser.Password = dataReader.GetString(8).TrimEnd(' ');
+                    //Determining if the table entry was successfully executed by checking if an entry is returned and comparing
+                    //all of the returned entry's information with the new User's information.
+                    if (dataReader.HasRows == true && newUser.FirstName.Equals(foundUser.FirstName) &&
+                        newUser.LastName.Equals(foundUser.LastName) &&
+                        newUser.Center.Equals(foundUser.Center) &&
+                        newUser.Email.Equals(foundUser.Email) &&
+                        newUser.PhoneNumber.Equals(foundUser.PhoneNumber) &&
+                        newUser.Username.Equals(foundUser.Username) &&
+                        newUser.Password.Equals(foundUser.Password))
+                    {
+                        success = true;
+                    }
+                    //Closing SQL connection
+                    sqlConnection.Close();
+                }
+                return success;
+            }
+        }
         ///This method returns an ADO.NET connection string. 
         private static string GetSqlConnectionString()
         {
             // Preparing the connection string to Azure SQL Database 
             var sqlConnectionSB = new S.SqlConnectionStringBuilder();
-            //Connecting to the SQL database with hard-coded strings, but it is not a secure method
-            sqlConnectionSB.DataSource = "tcp:mcca.database.windows.net,1433"; //["Server"]  
-            sqlConnectionSB.InitialCatalog = "MCCA Database"; //["Database"]  
+            //Connecting to the SQL database with connection strings accessed by a Configuration Builder by grabbing
+            //the connection strings through the appsettings.json file
+            var builder = new ConfigurationBuilder();
+            builder.AddJsonFile("appsettings.json");
+            var connectionStringConfig = builder.Build();
+            connectionStringConfig.GetSection("ConnectionStrings");
 
-            sqlConnectionSB.UserID = "whitej";  // "@yourservername"  as suffix sometimes.  
-            sqlConnectionSB.Password = "SacMesa416275";
+            String dataSource = connectionStringConfig["ConnectionStrings:dataSource"];
+            String databaseName = connectionStringConfig["ConnectionStrings:databaseName"];
+            String admin = connectionStringConfig["ConnectionStrings:Admin"];
+            String password = connectionStringConfig["ConnectionStrings:Password"];
+            sqlConnectionSB.DataSource = dataSource; //["Server"]  
+            sqlConnectionSB.InitialCatalog = databaseName; //["Database"]  
+
+            sqlConnectionSB.UserID = admin;
+            sqlConnectionSB.Password = password;
 
             sqlConnectionSB.IntegratedSecurity = false;
 

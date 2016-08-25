@@ -2,15 +2,22 @@
 @{
     ViewData["title"] = "Manage Accounts";
 }
-<h1>Manage Accounts</h1>
+<h2>Manage Accounts</h2>
 <fieldset>
-    @*Adding a create account button*@
-    <button type="submit" value="Add Account" onclick="location.href='@Url.Action("AddAccount", "Admin")'" class="btn btn-primary">Add Account</button>
+    @*Adding a create account button that will be 20 pixels about the search bar and other buttons*@
+    <button type="submit" onclick="location.href='@Url.Action("AddAccount", "Admin")'" style="margin-bottom:20px" class="btn btn-primary">Add Account</button>
     @*Adding textfield and buttons to create a search bar*@
-    <label for="Name">Name:</label>
-    <input type="text" id="Name">
-    <button type="submit" value="Filter First Name" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Filter by First Name</button>
-    <button type="submit" value="Filter Last Name" onclick="location.href='@Url.Action("Index", "Admin")'" class="btn btn-primary">Filter by Last Name</button>
+    <form>
+        <label for="Name">Name:</label>
+        @*Textbox that will be used to search user list*@
+        <input type="text" name="name" id="SearchName">
+        @*Adding a search button that sends the contents of the textbox to the "name" parameter of "ManageAccounts"*@
+        <button type="submit"  class="btn btn-primary">Search</button>
+        @*Adding a filter button that sends the "First Name" value to the "sortOrder" parameter of "ManageAccounts"*@
+        <button type="submit" name ="sortOrder" value="First Name" class="btn btn-primary">Filter by First Name</button>
+        @*Adding a filter button that sends the "Last Name" value to the "sortOrder" parameter of "ManageAccounts"*@
+        <button type="submit" name ="sortOrder" value="Last Name" class="btn btn-primary">Filter by Last Name</button>
+    </form>
 </fieldset>
 <table class="table">
     <thead>
