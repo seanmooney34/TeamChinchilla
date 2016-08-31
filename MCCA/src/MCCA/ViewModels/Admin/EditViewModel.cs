@@ -8,6 +8,7 @@ namespace MCCA.ViewModels.Admin
 {
     public class EditViewModel
     {
+        public int ID { get; set; }
         [Required]
         [StringLength(12)]
         public string FirstName { get; set; }

@@ -3,17 +3,17 @@
     ViewData["Title"] = "Edit";
 }
 <h2>Edit</h2>
-<form class="form-horizontal">
+<form method="post" class="form-horizontal">
     @*Adding First name textfield*@
     <div class="form-group">
         <label asp-for="FirstName" class="col-sm-3">First Name:</label>
-        <input asp-for="FirstName" class="form-control" value="@ViewData["firstName"].ToString()"/>
+        <input asp-for="FirstName" class="form-control" value="@Model.FirstName"/>
         <span asp-validation-for="FirstName" class="text-danger"></span>
     </div>
     @*Adding Last name textfield*@
     <div class="form-group">
         <label asp-for="LastName" class="col-sm-3">Last Name:</label>
-        <input asp-for="LastName" class="form-control" value="@ViewData["lastName"].ToString()"/>
+        <input asp-for="LastName" class="form-control" value="@Model.LastName"/>
         <span asp-validation-for="LastName" class="text-danger"></span>
     </div>
     @*@Adding a inline account type dropbox*@
@@ -21,14 +21,14 @@
         <div class="form-inline">
             <label asp-for="AccountType" class="col-sm-3">Account Type:</label>
             <select asp-for="AccountType" class="form-control">
-                @if (ViewData["accountType"].ToString().Equals("Director"))
+                @if (Model.AccountType.ToString().Equals("Director"))
                 {
-                    <option>@ViewData["accountType"].ToString()</option>
+                    <option>@Model.AccountType.ToString()</option>
                     <option>Staff</option>
                 }
                 else
                 {
-                    <option>@ViewData["accountType"].ToString()</option>
+                    <option>@Model.AccountType.ToString()</option>
                     <option>Director</option>
                 }
             </select>
@@ -43,7 +43,7 @@
         <div class="form-inline">
             <label asp-for="Center" class="col-sm-3">Center:</label>
             <select asp-for="Center" class="form-control" >
-                <option>@ViewData["center"].ToString()</option>
+                <option>@Model.Center.ToString()</option>
                 <option>Center1</option>
                 <option>Center2</option>
             </select>
@@ -56,7 +56,7 @@
     @*Adding email textfield*@
     <div class="form-group">
         <label asp-for="Email" class="col-sm-3">Email:</label>
-        <input asp-for="Email" class="form-control" value="@ViewData["email"].ToString()"/>
+        <input asp-for="Email" class="form-control" value="@Model.Email"/>
         <span asp-validation-for="Email" class="text-danger"></span>
         <div class="col-sm-offset-3">
             <small class="text-muted">Example: mesa@yahoo.com</small>
@@ -65,7 +65,7 @@
     @*Adding phone number textfield*@
     <div class="form-group">
         <label asp-for="PhoneNumber" class="col-sm-3">Phone Number:</label>
-        <input asp-for="PhoneNumber" class="form-control" value="@ViewData["phoneNumber"].ToString()"/>
+        <input asp-for="PhoneNumber" class="form-control" value="@Model.PhoneNumber"/>
         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
         <div class="col-sm-offset-3">
             <small class="text-muted">Example: 916-555-5555</small>
@@ -74,7 +74,7 @@
     @*Adding username textfield*@
     <div class="form-group">
         <label asp-for="Username" class="col-sm-3">Username:</label>
-        <input asp-for="Username" class="form-control" value="@ViewData["userName"].ToString()"/>
+        <input asp-for="Username" class="form-control" value="@Model.Username"/>
         <span asp-validation-for="Username" class="text-danger"></span>
     </div>
     @*Adding password textfield*@

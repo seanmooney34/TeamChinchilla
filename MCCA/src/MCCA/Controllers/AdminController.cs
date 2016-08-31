@@ -9,6 +9,7 @@ using S = System.Data.SqlClient;
 using T = System.Threading;
 using MCCA.ViewModels.Admin;
 using Microsoft.Extensions.Configuration;
+using System.Web;
 
 namespace MCCA.Controllers
 {
@@ -37,12 +38,12 @@ namespace MCCA.Controllers
             userList = sqlConnectionForUsersList();
             //If the search text bar passes a value, then a list is created and passed into the view containing
             //users whose names contain the given search input
-            if(String.IsNullOrEmpty(name) == false)
+            if (String.IsNullOrEmpty(name) == false)
             {
-                foreach(User member in userList)
+                foreach (User member in userList)
                 {
                     String username = member.FirstName + " " + member.LastName;
-                    if(username.Contains(name))
+                    if (username.Contains(name))
                     {
                         searchList.Add(member);
                     }
@@ -56,57 +57,62 @@ namespace MCCA.Controllers
                 switch (sortOrder)
                 {
                     case "First Name":
-                    {
-                        userList.Sort(delegate (User x, User y)
                         {
-                            return x.FirstName.CompareTo(y.FirstName);
-                        });
-                        break;
-                    }
+                            userList.Sort(delegate (User x, User y)
+                            {
+                                return x.FirstName.CompareTo(y.FirstName);
+                            });
+                            break;
+                        }
                     case "Last Name":
-                    {
-                        userList.Sort(delegate (User x, User y)
                         {
-                            return x.LastName.CompareTo(y.LastName);
-                        });
-                        break;
-                    }
+                            userList.Sort(delegate (User x, User y)
+                            {
+                                return x.LastName.CompareTo(y.LastName);
+                            });
+                            break;
+                        }
                     default:
-                    {
-                        userList.Sort(delegate (User x, User y)
                         {
-                            return x.AccountType.CompareTo(y.AccountType);
-                        });
-                        break;
-                    }
+                            userList.Sort(delegate (User x, User y)
+                            {
+                                return x.AccountType.CompareTo(y.AccountType);
+                            });
+                            break;
+                        }
                 }
             }
             return View(userList);
         }
+        //This method returns the AddAccount View
+        [HttpGet]
+        public IActionResult AddAccount()
+        {
+            return View();
+        }
         //This method adds an account with provided information to the SQL database and redirects user to ManageAccounts
         //if successful
+        [HttpPost]
         public IActionResult AddAccount(AddAccountViewModel model)
         {
             Boolean success = false;
             User newUser = new Models.User();
             //ID initialized for comparison
-            int ID = 0;
-            //SortedList<String, User> userSortedList = new SortedList<string, User>();
+            int ID = 1;
             List<User> userList = new List<User>();
             //Storing the SortedList object returned which contains all Users
             userList = sqlConnectionForUsersList();
-            //ID is compared with the ID value of all Users and if ID is less, than replace the ID value.
-            //This is to get the highest ID value given to a User
+            //ID is compared with the ID value of all Users and is incremented by 1 in each loop. If ID doesn't match
+            //a User ID then break the loop and use the new ID value for the new User account ID.
+            //This means if a User is deleted, then a new User will get the old ID
             foreach (var item in userList)
             {
-                if (ID < item.ID)
+                if (ID != item.ID)
                 {
-                    ID = item.ID;
+                    break;
                 }
+                ID += 1;
             }
-            //ID is incremented afterward so it will always be higher than the highest ID value given to a User.
-            //For this reason ID will always be unique.
-            ID += 1;
             newUser.FirstName = model.FirstName;
             newUser.LastName = model.LastName;
             newUser.AccountType = model.AccountType;
@@ -120,25 +126,32 @@ namespace MCCA.Controllers
             {
                 return RedirectToAction("ManageAccounts");
             }
-
             return View();
         }
-        //This method allows the Admin to edit accounts displayed in Manage Accounts
-        public IActionResult Edit(int ID, EditViewModel model)
+        //This method returns the Edit View with the EditViewModel passed in to display account information
+        [HttpGet]
+        public IActionResult Edit(int ID)
         {
-            Boolean success = false;
             User foundUser = new Models.User();
-            User updatedUser = new Models.User();
+            EditViewModel model = new EditViewModel();
+            //Getting User information based on User ID
             foundUser = sqlConnectionForUser(ID);
             //Storing the information in ViewData to be used to fill in the Edit form
-            ViewData["firstName"] = foundUser.FirstName;
-            ViewData["lastName"] = foundUser.LastName;
-            ViewData["accountType"] = foundUser.AccountType;
-            ViewData["center"] = foundUser.Center;
-            ViewData["email"] = foundUser.Email;
-            ViewData["phoneNumber"] = foundUser.PhoneNumber;
-            ViewData["userName"] = foundUser.Username;
-            ViewData["Test"] = model.FirstName;
+            model.ID = foundUser.ID;
+            model.FirstName = foundUser.FirstName;
+            model.LastName = foundUser.LastName;
+            model.AccountType = foundUser.AccountType;
+            model.Center = foundUser.Center;
+            model.Email = foundUser.Email;
+            model.PhoneNumber = foundUser.PhoneNumber;
+            model.Username = foundUser.Username;
+            return View(model);
+        }
+        //This method allows the Admin to edit accounts displayed in Manage Accounts
+        public IActionResult Edit(EditViewModel model)
+        {
+            Boolean success = false;
+            User updatedUser = new Models.User();
             //Getting ViewModel model information given in the textfields of the Manage Personal Account page
             updatedUser.FirstName = model.FirstName;
             updatedUser.LastName = model.LastName;
@@ -149,7 +162,7 @@ namespace MCCA.Controllers
             updatedUser.Username = model.Username;
             updatedUser.Password = model.Password;
             //Getting Boolean result of SQL entry information update
-            success = sqlConnectionUpdateUser(ID, updatedUser);
+            success = sqlConnectionUpdateUser(model.ID, updatedUser);
             //If the update was successful, redirect the User to the Manage Accounts page
             if (success == true)
             {
@@ -161,99 +174,113 @@ namespace MCCA.Controllers
         public IActionResult Delete(int ID)
         {
             User foundUser = new Models.User();
-            //success = accessDatabaseToDeleteUser(ID);
             foundUser = sqlConnectionForUser(ID);
             return View(foundUser);
         }
-        //This method deletes the user from the system if the delete button in the Edit View is clicked on and sends the User
+        //This method deletes the user from the system if the delete button is clicked on and sends the User
         //to Manage Accounts
         [HttpPost, ActionName("Delete")]
         public IActionResult DeleteConfirmed(User model)
         {
             Boolean success = false;
-            if (model != null)
+            //The model's first name is checked to verify if the model object is null to prevent unnecessary SQL database access
+            if (String.IsNullOrEmpty(model.FirstName))
             {
-                success = accessDatabaseToDeleteUser(model.ID);
+                success = sqlConnectionDeleteUser(model.ID);
             }
-            if(success == true)
+            if (success == true)
             {
                 return RedirectToAction("ManageAccounts");
             }
             return RedirectToAction("Edit", new { ID = model.ID });
         }
-        public IActionResult SelectCenter()
-        {
-            return View();
-        }
         public IActionResult ManageCenters()
         {
             return View();
         }
-        public IActionResult AddCenter()
+        public IActionResult AddCenter(AddCenterViewModel model)
         {
+            if (String.IsNullOrEmpty(model.Name) == false)
+            {
+                //if (model.Picture.File.ContentLength > 0)
+                //{
+                    return RedirectToAction("ManageAccounts");
+                //}
+            }
             return View();
         }
+        //[HttpPost, ActionName("AddCenter")]
+        /*[HttpPost]
+        public IActionResult AddCenterConfirmed(AddCenterViewModel model)
+        {
+            if(String.IsNullOrEmpty(model.Name) == false)
+            {
+                return RedirectToAction("ManageAccounts");
+            }
+            if (model.Picture.File.ContentLength > 0)
+            {
+                return RedirectToAction("ManageAccounts");
+            }
+            if(attachPicture == true)
+            {
+                if(String.IsNullOrEmpty(GetPicture()))
+                {
+                    ViewData["Test"] = "success";
+                }
+            }
+            if(String.IsNullOrEmpty(test) == false)
+            {
+                ViewData["Test"] = "success";
+            }
+            //return RedirectToAction(nameof(AdminController.ManagePersonalAccount), "Admin");
+        }*/
         public IActionResult ManageSite()
         {
             return View();
         }
+        //This method returns the ManagePersonalAccount View with the ManagePersonalAccountViewModel passed in to 
+        //display account information
+        [HttpGet]
+        public IActionResult ManagePersonalAccount()
+        {
+            User foundUser = new Models.User();
+            ManagePersonalAccountViewModel model = new ManagePersonalAccountViewModel();
+            //Getting SQL table entry based on User ID
+            foundUser = sqlConnectionForUser(adminID);
+            model.FirstName = foundUser.FirstName;
+            model.LastName = foundUser.LastName;
+            model.AccountType = foundUser.AccountType;
+            model.Center = foundUser.Center;
+            model.Email = foundUser.Email;
+            model.PhoneNumber = foundUser.PhoneNumber;
+            model.Username = foundUser.Username;
+            return View(model);
+        }
         //This method allows the User to edit personal account information, save the changes to the SQL database and
         //refreshes the page for the User showing the update informatin if successful
+        [HttpPost]
         public IActionResult ManagePersonalAccount(ManagePersonalAccountViewModel model)
         {
             Boolean success = false;
-            User foundUser = new Models.User();
             User updatedUser = new Models.User();
-            //Getting SQL table entry based on User ID
-            foundUser = sqlConnectionForUser(adminID);
-            //Storing the information in ViewData to be used to pre-fill the Manage Personal Account form
-            ViewData["firstName"] = foundUser.FirstName.TrimEnd(' ');
-            ViewData["lastName"] = foundUser.LastName.TrimEnd(' ');
-            ViewData["accountType"] = foundUser.AccountType.TrimEnd(' ');
-            ViewData["center"] = foundUser.Center.TrimEnd(' ');
-            ViewData["email"] = foundUser.Email.TrimEnd(' ');
-            ViewData["phoneNumber"] = foundUser.PhoneNumber.TrimEnd(' ');
-            ViewData["userName"] = foundUser.Username.TrimEnd(' ');
             //Getting ViewModel model information given in the textfields of the Manage Personal Account page that
             //an Admin is allowed to change
-            //The model's first name is checked to verify if the model object is null to prevent unnecessary SQL database access
-            if (model.FirstName != null)
+            updatedUser.FirstName = model.FirstName.TrimEnd(' ');
+            updatedUser.LastName = model.LastName.TrimEnd(' ');
+            updatedUser.Center = model.Center.TrimEnd(' ');
+            updatedUser.Email = model.Email.TrimEnd(' ');
+            updatedUser.PhoneNumber = model.PhoneNumber.TrimEnd(' ');
+            updatedUser.Username = model.Username.TrimEnd(' ');
+            updatedUser.Password = model.Password.TrimEnd(' ');
+            //Getting Boolean result of SQL entry information update
+            success = sqlConnectionUpdateUser(adminID, updatedUser);
+            //If the update was successful, redirect the User to the Manage Personal Account View to refresh the page
+            //with the updated information.
+            if (success == true)
             {
-                updatedUser.FirstName = model.FirstName;
-                updatedUser.LastName = model.LastName;
-                updatedUser.Center = model.Center;
-                updatedUser.Email = model.Email;
-                updatedUser.PhoneNumber = model.PhoneNumber;
-                updatedUser.Username = model.Username;
-                updatedUser.Password = model.Password;
-                //Getting Boolean result of SQL entry information update
-                success = sqlConnectionUpdateUser(adminID, updatedUser);
-                //If the update was successful, redirect the User to the Manage Personal Account View to refresh the page
-                //with the updated information.
-                if (success == true)
-                {
-                    return RedirectToAction("ManagePersonalAccount");
-                }
+                return RedirectToAction("ManagePersonalAccount");
             }
-            return View();
-        }
-        //This method simply provides the confirmation page for the deletion of one's account from the database
-        public IActionResult DeletePersonalAccount()
-        {
-            return View();
-        }
-        //This method is called when the delete confirmation button is clicked on when deleting own account.
-        //It deletes the User from the database and sends the User to the Home Page if successful.
-        [HttpPost, ActionName("DeletePersonalAccount")]
-        public IActionResult DeletePersonalAccountConfirmed()
-        {
-            Boolean success = false;
-            success = sqlConnectionDeleteUser(adminID);
-            if(success == true)
-            {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
-            return RedirectToAction("DeletePersonalAccount");
+            return View(model);
         }
         //This method attempts to connect to the SQL database and returns a User object
         private User sqlConnectionForUser(int ID)
@@ -305,14 +332,15 @@ namespace MCCA.Controllers
                     //Advancing to the next record which is the first and only record in this case
                     dataReader.Read();
                     //Storing information from found sql entry into a User object and returning it
-                    foundUser.FirstName = dataReader.GetString(1);
-                    foundUser.LastName = dataReader.GetString(2);
-                    foundUser.AccountType = dataReader.GetString(3);
-                    foundUser.Center = dataReader.GetString(4);
-                    foundUser.Email = dataReader.GetString(5);
-                    foundUser.PhoneNumber = dataReader.GetString(6);
-                    foundUser.Username = dataReader.GetString(7);
-                    foundUser.Password = dataReader.GetString(8);
+                    foundUser.ID = dataReader.GetInt32(0);
+                    foundUser.FirstName = dataReader.GetString(1).TrimEnd(' ');
+                    foundUser.LastName = dataReader.GetString(2).TrimEnd(' ');
+                    foundUser.AccountType = dataReader.GetString(3).TrimEnd(' ');
+                    foundUser.Center = dataReader.GetString(4).TrimEnd(' ');
+                    foundUser.Email = dataReader.GetString(5).TrimEnd(' ');
+                    foundUser.PhoneNumber = dataReader.GetString(6).TrimEnd(' ');
+                    foundUser.Username = dataReader.GetString(7).TrimEnd(' ');
+                    foundUser.Password = dataReader.GetString(8).TrimEnd(' ');
                     //Closing SQL connection
                     sqlConnection.Close();
                 }
@@ -554,7 +582,7 @@ namespace MCCA.Controllers
                     foundUser.Password = dataReader.GetString(8).TrimEnd(' ');
                     //Determining if the table entry was successfully executed by checking if an entry is returned and comparing
                     //all of the returned entry's information with the new User's information.
-                    if (dataReader.HasRows == true && newUser.FirstName.Equals(foundUser) &&
+                    if (dataReader.HasRows == true && newUser.FirstName.Equals(foundUser.FirstName) &&
                         newUser.LastName.Equals(foundUser.LastName) &&
                         newUser.Center.Equals(foundUser.Center) &&
                         newUser.Email.Equals(foundUser.Email) &&
@@ -619,14 +647,14 @@ namespace MCCA.Controllers
                     dbCommand.Parameters.AddWithValue("@ID", ID);
                     //Building data reader
                     var dataReader = dbCommand.ExecuteReader();
-                    dataReader.Read(); 
+                    dataReader.Read();
                     //If the User can't be found, then the User was successfully deleted 
                     if (dataReader.HasRows == false)
                     {
                         success = true;
                     }
-                //Closing SQL connection
-                sqlConnection.Close();
+                    //Closing SQL connection
+                    sqlConnection.Close();
                 }
                 return success;
             }

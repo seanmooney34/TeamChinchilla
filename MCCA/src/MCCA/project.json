@@ -37,7 +37,8 @@
   "frameworks": {
     "dnx451": {
       "frameworkAssemblies": {
-        "System.configuration": "4.0.0.0"
+        "System.configuration": "4.0.0.0",
+        "System.Web": "4.0.0.0"
       }
     }
   },

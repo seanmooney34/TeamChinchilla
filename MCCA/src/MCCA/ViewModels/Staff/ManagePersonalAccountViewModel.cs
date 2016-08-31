@@ -15,6 +15,7 @@ namespace MCCA.ViewModels.Staff
         [StringLength(12)]
         public string LastName { get; set; }
         public string AccountType { get; set; }
+        [Required]
         [StringLength(50)]
         public string Center { get; set; }
         [Required]
@@ -24,6 +25,7 @@ namespace MCCA.ViewModels.Staff
         [StringLength(12)]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
+        [Required]
         [StringLength(12)]
         public string Username { get; set; }
         [Required]
