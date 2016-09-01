@@ -15,7 +15,7 @@ namespace MCCA.ViewModels.Admin
         [StringLength(50)]
         public string Name { get; set; }
         [Required]
-        [StringLength(25)]
+        [StringLength(50)]
         public string Address { get; set; }
         [Required]
         [StringLength(20)]

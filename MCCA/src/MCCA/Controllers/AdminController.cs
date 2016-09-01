@@ -198,42 +198,40 @@ namespace MCCA.Controllers
         {
             return View();
         }
-        public IActionResult AddCenter(AddCenterViewModel model)
+        [HttpGet]
+        //This method returns the AddCenter View
+        public IActionResult AddCenter()
         {
-            if (String.IsNullOrEmpty(model.Name) == false)
-            {
-                //if (model.Picture.File.ContentLength > 0)
-                //{
-                    return RedirectToAction("ManageAccounts");
-                //}
-            }
             return View();
         }
         //[HttpPost, ActionName("AddCenter")]
-        /*[HttpPost]
-        public IActionResult AddCenterConfirmed(AddCenterViewModel model)
+        [HttpPost]
+        public IActionResult AddCenter(AddCenterViewModel model)
         {
-            if(String.IsNullOrEmpty(model.Name) == false)
+            /*if(String.IsNullOrEmpty(model.Name) == false)
             {
                 return RedirectToAction("ManageAccounts");
-            }
+            }*/
             if (model.Picture.File.ContentLength > 0)
             {
                 return RedirectToAction("ManageAccounts");
             }
-            if(attachPicture == true)
+            return RedirectToAction("ManageCenters");
+        }
+        [HttpGet]
+        public IActionResult PictureTest()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult PictureTest(HttpPostedFileBase photo)
+        {
+            if(photo.ContentLength > 0)
             {
-                if(String.IsNullOrEmpty(GetPicture()))
-                {
-                    ViewData["Test"] = "success";
-                }
+                return RedirectToAction("ManageAccounts");
             }
-            if(String.IsNullOrEmpty(test) == false)
-            {
-                ViewData["Test"] = "success";
-            }
-            //return RedirectToAction(nameof(AdminController.ManagePersonalAccount), "Admin");
-        }*/
+            return RedirectToAction("ManagePersonalAccount");
+        }
         public IActionResult ManageSite()
         {
             return View();

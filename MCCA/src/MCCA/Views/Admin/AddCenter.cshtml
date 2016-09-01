@@ -6,7 +6,7 @@
     ViewData["Title"] = "Add Center";
 }
 <h2>Add Center</h2>
-<form class="form-horizontal">
+<form method="post" class="form-horizontal">
     @*Adding center name textfield*@
     <div class="form-group">
         <label asp-for="Name" class="col-sm-3">First Name:</label>
@@ -94,7 +94,6 @@
     @*Adding a submit button that adds new center information to the database and add the new center to the Center page*@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
-<h5>@ViewData["Test"]</h5>
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
