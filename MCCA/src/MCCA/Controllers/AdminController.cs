@@ -10,7 +10,6 @@ using T = System.Threading;
 using MCCA.ViewModels.Admin;
 using Microsoft.Extensions.Configuration;
 using System.Web;
-
 namespace MCCA.Controllers
 {
     //[Authorize(Roles = "Admin")]
@@ -212,10 +211,10 @@ namespace MCCA.Controllers
             {
                 return RedirectToAction("ManageAccounts");
             }*/
-            if (model.Picture.File.ContentLength > 0)
+            /*if (model.Picture.File.ContentLength > 0)
             {
                 return RedirectToAction("ManageAccounts");
-            }
+            }*/
             return RedirectToAction("ManageCenters");
         }
         [HttpGet]
@@ -224,9 +223,9 @@ namespace MCCA.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult PictureTest(HttpPostedFileBase photo)
+        public IActionResult PictureTest(Picture File)
         {
-            if(photo.ContentLength > 0)
+            if(File.File.ContentLength > 0)
             {
                 return RedirectToAction("ManageAccounts");
             }

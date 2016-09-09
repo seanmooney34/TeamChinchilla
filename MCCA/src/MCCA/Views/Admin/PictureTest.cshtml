@@ -1,12 +1,13 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@model MCCA.Models.Picture
 @{
     ViewData["Title"] = "File Upload";
 }
 <h2>File Upload</h2>
 @using (Html.BeginForm("PictureTest", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-    <input type="file" name="photo" />
+    <input type="file" ID ="File" name="File" />
     <input type="submit" value="Upload" />
 }

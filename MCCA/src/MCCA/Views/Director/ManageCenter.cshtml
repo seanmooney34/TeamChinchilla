@@ -1,11 +1,11 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@model MCCA.ViewModels.Admin.AddCenterViewModel
+@model MCCA.ViewModels.Director.ManageCenterViewModel
 @{
-    ViewData["Title"] = "Add Center";
+    ViewData["Title"] = "Manage Center";
 }
-<h2>Add Center</h2>
+<h2>Manage Center</h2>
 <form method="post" class="form-horizontal">
     @*Adding center name textfield*@
     <div class="form-group">
@@ -73,18 +73,20 @@
     </div>
     @*Adding center description textblock*@
     <div class="form-group">
-            <label asp-for="Description" class="col-sm-3">Description:</label>
-            <textarea rows="4" input asp-for="Description" class="form-control"> </textarea>
-            <div class="col-sm-offset-3">
-                <small class="text-muted">Any information you want to share about the center such as statistical information.</small>
-            </div>
-            <span asp-validation-for="Description" class="text-danger"></span>
+        <label asp-for="Description" class="col-sm-3">Description:</label>
+        <textarea rows="4" input asp-for="Description" class="form-control"> </textarea>
+        <div class="col-sm-offset-3">
+            <small class="text-muted">Any information you want to share about the center such as statistical information.</small>
+        </div>
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Picture" class="col-sm-3">Center Logo:</label>
         <input asp-for="Picture" type="file" class="form-control" />
         <span asp-validation-for="Picture" class="text-danger"></span>
     </div>
+    <fieldset style="margin-bottom:30px">
+    </fieldset>
     @*Adding a submit button that adds new center information to the database and add the new center to the Center page*@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>

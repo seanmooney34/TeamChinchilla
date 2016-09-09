@@ -199,6 +199,16 @@ namespace MCCA.Controllers
             }
             return RedirectToAction("Edit", new { ID = model.ID });
         }
+        [HttpGet]
+        public IActionResult ManageCenter()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult ManageCenter(ManageCenterViewModel model)
+        {
+            return View();
+        }
         public IActionResult ManageSite()
         {
             return View();
