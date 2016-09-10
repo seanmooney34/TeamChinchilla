@@ -223,9 +223,9 @@ namespace MCCA.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult PictureTest(Picture File)
+        public IActionResult PictureTest(HttpPostedFileBase File)
         {
-            if(File.File.ContentLength > 0)
+            if(File.ContentLength > 0)
             {
                 return RedirectToAction("ManageAccounts");
             }
