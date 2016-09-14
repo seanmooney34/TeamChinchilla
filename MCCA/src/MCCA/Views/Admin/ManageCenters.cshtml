@@ -8,8 +8,26 @@
 <h2>Manage Centers</h2>
 <fieldset>
     @*Adding a create center button*@
-    <button type="submit" value="Add Center" onclick="location.href='@Url.Action("PictureTest", "Admin")'" class="btn btn-primary">Add Center</button>
+    <!--
+        <button type="submit" value="Add Center" onclick="location.href='@Url.Action("PictureTest", "Admin")'" class="btn btn-primary">Add Center</button>
+    -->
+
+    @using (Html.BeginForm("PictureTest", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <input type="file" name="uploadFile" id="uploadFile" />
+        <input type="submit" />
+    }
+
+
+    <form action="/Admin/PictureTest" method="post" enctype="multipart/form-data">
+
+        <label for="uploadFile">Photo:</label>
+        <input type="file" name="uploadFile" id="uploadFile" />
+
+        <input type="submit" value="PictureTest" />
+    </form>
 </fieldset>
+
 @*Adding a hard-coded table*@
 <table class="table" style="margin-top:20px;">
     <tr>

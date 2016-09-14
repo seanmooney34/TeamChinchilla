@@ -49,6 +49,9 @@ namespace MCCA.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+                // need to do an SQLstring parse to protect against SQL injection
+                // and an \ to every \ or ' in the string easy
+
                 //Getting the a User from the SQL database whose username and password match those provided
                 foundUser = sqlConnection(model.Username, model.Password);
                 //There is a chance that an empty User object may be given due connection issues or incorrect login information
@@ -239,7 +242,9 @@ namespace MCCA.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
-        /* public AccountController(
+
+        /*
+        public AccountController(
               UserManager<ApplicationUser> userManager,
               SignInManager<ApplicationUser> signInManager,
               IEmailSender emailSender,

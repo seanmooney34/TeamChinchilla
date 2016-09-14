@@ -198,11 +198,13 @@ namespace MCCA.Controllers
             return View();
         }
         [HttpGet]
+        
         //This method returns the AddCenter View
         public IActionResult AddCenter()
         {
             return View();
         }
+        
         //[HttpPost, ActionName("AddCenter")]
         [HttpPost]
         public IActionResult AddCenter(AddCenterViewModel model)
@@ -217,20 +219,23 @@ namespace MCCA.Controllers
             }*/
             return RedirectToAction("ManageCenters");
         }
+
         [HttpGet]
         public IActionResult PictureTest()
         {
             return View();
         }
+
         [HttpPost]
-        public IActionResult PictureTest(HttpPostedFileBase File)
+        public IActionResult PictureTest(HttpPostedFileBase uploadFile)
         {
-            if(File.ContentLength > 0)
+            if(uploadFile.ContentLength > 0)
             {
                 return RedirectToAction("ManageAccounts");
             }
             return RedirectToAction("ManagePersonalAccount");
         }
+
         public IActionResult ManageSite()
         {
             return View();
